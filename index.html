@@ -86,11 +86,11 @@
     </div>
 
     <label>Upload your CV (PDF):
-      <input type="file" id="cv" accept=".pdf" required />
+      <input type="file" id="cv" accept=".pdf" />
     </label>
 
     <label>Upload Motivation Letter (PDF):
-      <input type="file" id="motivation" accept=".pdf" required />
+      <input type="file" id="motivation" accept=".pdf" />
     </label>
 
     <br><br>
@@ -116,19 +116,14 @@
       const cvFile = document.getElementById("cv").files[0];
       const motivationFile = document.getElementById("motivation").files[0];
 
-      if (!cvFile || !motivationFile) {
-        alert("Please upload both files.");
-        return;
-      }
+      const cvBase64 = cvFile ? await toBase64(cvFile) : "";
+      const motivationBase64 = motivationFile ? await toBase64(motivationFile) : "";
 
       const token = grecaptcha.getResponse();
       if (!token) {
         alert("Please complete the reCAPTCHA.");
         return;
       }
-
-      const cvBase64 = await toBase64(cvFile);
-      const motivationBase64 = await toBase64(motivationFile);
 
       const payload = new URLSearchParams({
         firstName: form.firstName.value,
@@ -147,15 +142,11 @@
       })
       .then(res => res.text())
       .then(text => {
-        console.log("Server response:", text);
-        alert(text); // full backend response including reCAPTCHA errors
+        alert(text);
         form.reset();
         grecaptcha.reset();
       })
-      .catch(err => {
-        console.error("Error submitting form:", err);
-        alert("Error: " + err.message);
-      });
+      .catch(err => alert("Error: " + err.message));
     });
   </script>
 </body>
