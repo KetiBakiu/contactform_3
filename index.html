@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Form</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+      background: #f7f7f7;
+    }
+    form#contact-form {
+      background: white;
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    form#contact-form h2 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    form#contact-form p {
+      margin-bottom: 20px;
+      color: #666;
+    }
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    input, textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    button {
+      background: black;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #333;
+    }
+  </style>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+  <form id="contact-form">
+    <h2>Send Us a Message</h2>
+    <p>Please fill in the form below to get in touch with us.</p>
+
+    <div class="form-row">
+      <input type="text" name="firstName" placeholder="First name" required />
+      <input type="text" name="lastName" placeholder="Last name" required />
+    </div>
+
+    <div class="form-row">
+      <input type="email" name="email" placeholder="Email address" required />
+      <input type="tel" name="phone" placeholder="Phone Number" />
+    </div>
+
+    <div class="form-row">
+      <textarea name="message" placeholder="Message" required></textarea>
+    </div>
+
+    <label>Upload your CV (PDF):
+      <input type="file" id="cv" accept=".pdf" required />
+    </label>
+
+    <label>Upload Motivation Letter (PDF):
+      <input type="file" id="motivation" accept=".pdf" required />
+    </label>
+
+    <br><br>
+    <button
+      class="g-recaptcha"
+      data-sitekey="6LcVAZorAAAAAGZgp2I_2M6t2atJHL7o18Cu_aEm"
+      data-callback="onSubmit"
+      data-action="submit"
+    >
+      Submit
+    </button>
+  </form>
+
+  <script>
+    function onSubmit(token) {
+      const form = document.getElementById("contact-form");
+
+      const toBase64 = file =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = error => reject(error);
+        });
+
+      (async () => {
+        const cvFile = document.getElementById("cv").files[0];
+        const motivationFile = document.getElementById("motivation").files[0];
+
+        if (!cvFile || !motivationFile) {
+          alert("Please upload both files.");
+          return;
+        }
+
+        const cvBase64 = await toBase64(cvFile);
+        const motivationBase64 = await toBase64(motivationFile);
+
+        const payload = new URLSearchParams({
+          firstName: form.firstName.value,
+          lastName: form.lastName.value,
+          email: form.email.value,
+          phone: form.phone.value,
+          message: form.message.value,
+          cvBase64,
+          motivationBase64,
+          token: token
+        });
+
+        fetch("https://script.google.com/macros/s/AKfycbyL4AJ2gsAHHomrHHAorjLSD-TBRF9ZAzN3u74527bh9GIrFroD943cNC5vbXTF3hSb/exec", {
+          method: "POST",
+          body: payload
+        })
+        .then(res => res.text())
+        .then(text => {
+          alert(text);
+          form.reset();
+          grecaptcha.reset();
+        })
+        .catch(err => alert("Error: " + err.message));
+      })();
+    }
+  </script>
+</body>
+</html>
