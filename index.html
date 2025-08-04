@@ -94,20 +94,17 @@
     </label>
 
     <br><br>
-    <button
-      class="g-recaptcha"
-      data-sitekey="6LcVAZorAAAAAGZgp2I_2M6t2atJHL7o18Cu_aEm"
-      data-callback="onSubmit"
-      data-action="submit"
-    >
-      Submit
-    </button>
+    <!-- reCAPTCHA checkbox -->
+    <div class="g-recaptcha" data-sitekey="6LcVAZorAAAAAGZgp2I_2M6t2atJHL7o18Cu_aEm"></div>
+    <br>
+    <button type="submit">Submit</button>
   </form>
 
   <script>
-    function onSubmit(token) {
-      const form = document.getElementById("contact-form");
+    document.getElementById("contact-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
 
+      const form = e.target;
       const toBase64 = file =>
         new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -116,42 +113,46 @@
           reader.onerror = error => reject(error);
         });
 
-      (async () => {
-        const cvFile = document.getElementById("cv").files[0];
-        const motivationFile = document.getElementById("motivation").files[0];
+      const cvFile = document.getElementById("cv").files[0];
+      const motivationFile = document.getElementById("motivation").files[0];
 
-        if (!cvFile || !motivationFile) {
-          alert("Please upload both files.");
-          return;
-        }
+      if (!cvFile || !motivationFile) {
+        alert("Please upload both files.");
+        return;
+      }
 
-        const cvBase64 = await toBase64(cvFile);
-        const motivationBase64 = await toBase64(motivationFile);
+      const token = grecaptcha.getResponse();
+      if (!token) {
+        alert("Please complete the reCAPTCHA.");
+        return;
+      }
 
-        const payload = new URLSearchParams({
-          firstName: form.firstName.value,
-          lastName: form.lastName.value,
-          email: form.email.value,
-          phone: form.phone.value,
-          message: form.message.value,
-          cvBase64,
-          motivationBase64,
-          token: token
-        });
+      const cvBase64 = await toBase64(cvFile);
+      const motivationBase64 = await toBase64(motivationFile);
 
-        fetch("https://script.google.com/macros/s/AKfycbyL4AJ2gsAHHomrHHAorjLSD-TBRF9ZAzN3u74527bh9GIrFroD943cNC5vbXTF3hSb/exec", {
-          method: "POST",
-          body: payload
-        })
-        .then(res => res.text())
-        .then(text => {
-          alert(text);
-          form.reset();
-          grecaptcha.reset();
-        })
-        .catch(err => alert("Error: " + err.message));
-      })();
-    }
+      const payload = new URLSearchParams({
+        firstName: form.firstName.value,
+        lastName: form.lastName.value,
+        email: form.email.value,
+        phone: form.phone.value,
+        message: form.message.value,
+        cvBase64,
+        motivationBase64,
+        token: token
+      });
+
+      fetch("https://script.google.com/macros/s/AKfycbyL4AJ2gsAHHomrHHAorjLSD-TBRF9ZAzN3u74527bh9GIrFroD943cNC5vbXTF3hSb/exec", {
+        method: "POST",
+        body: payload
+      })
+      .then(res => res.text())
+      .then(text => {
+        alert(text);
+        form.reset();
+        grecaptcha.reset();
+      })
+      .catch(err => alert("Error: " + err.message));
+    });
   </script>
 </body>
 </html>
