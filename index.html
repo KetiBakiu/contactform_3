@@ -138,7 +138,7 @@
         message: form.message.value,
         cvBase64,
         motivationBase64,
-        token: token
+        token
       });
 
       fetch("https://script.google.com/macros/s/AKfycbw-NDcRpqhh9v3TgRVRpnGUqLAvvTTc9SrPb62CmVCQUdtgLUIH1-W6IRdDBdybSZws/exec", {
@@ -147,11 +147,15 @@
       })
       .then(res => res.text())
       .then(text => {
-        alert(text);
+        console.log("Server response:", text);
+        alert(text); // full backend response including reCAPTCHA errors
         form.reset();
         grecaptcha.reset();
       })
-      .catch(err => alert("Error: " + err.message));
+      .catch(err => {
+        console.error("Error submitting form:", err);
+        alert("Error: " + err.message);
+      });
     });
   </script>
 </body>
