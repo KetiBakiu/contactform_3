@@ -1,152 +1,253 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sq">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contact Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Formular Kontakti</title>
   <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      padding: 40px;
-      background: #f7f7f7;
+    :root{
+      --accent: #ced998;   /* jeshile e kërkuar */
+      --accent-2:#b8c480;
+      --ink: #1b1f22;
+      --muted:#5b6368;
+      --bg: #f7f9f3;
+      --card:#ffffff;
+      --stroke:#e3ebcc;
+      --radius:12px;
+      --shadow: 0 10px 24px rgba(0,0,0,.08);
     }
-    form#contact-form {
-      background: white;
-      padding: 30px;
-      max-width: 500px;
-      width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    *{ box-sizing: border-box; }
+
+    body{
+      margin:0; padding:40px;
+      background: radial-gradient(700px 500px at 10% 0%, rgba(206,217,152,.25), transparent 60%),
+                  radial-gradient(700px 500px at 100% 100%, rgba(184,196,128,.18), transparent 60%),
+                  var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--ink);
+      display:flex; justify-content:center;
     }
-    form#contact-form h2 {
-      margin-bottom: 10px;
-      font-size: 24px;
+
+    form#contact-form{
+      width:min(640px,100%);
+      background: var(--card);
+      border:1px solid var(--stroke);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 28px;
     }
-    form#contact-form p {
-      margin-bottom: 20px;
-      color: #666;
+
+    h2{ margin: 0 0 6px 0; font-size: 26px; }
+    p.lead{ margin:0 0 20px 0; color: var(--muted); }
+
+    .form-row{
+      display:grid; grid-template-columns: 1fr 1fr; gap:14px;
+      margin-bottom: 16px;
     }
-    .form-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
+    @media (max-width:640px){ .form-row{ grid-template-columns: 1fr; } }
+
+    label{
+      display:block; font-size:14px; margin-bottom:8px; color:#3b3f36; font-weight:600;
     }
-    input, textarea {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      width: 100%;
-      box-sizing: border-box;
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea,
+    input[type="file"]{
+      width:100%;
+      padding:12px 12px;
+      border:1.5px solid var(--stroke);
+      border-radius: var(--radius);
+      background:#fff;
+      font-size:14px;
+      transition: border .2s ease, box-shadow .2s ease;
     }
-    textarea {
-      min-height: 100px;
-      resize: vertical;
+    textarea{ min-height:120px; resize: vertical; }
+
+    input:focus, textarea:focus{
+      outline: none;
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 4px rgba(206,217,152,.28);
     }
-    label {
-      display: block;
-      margin-bottom: 10px;
-      font-size: 14px;
+
+    .help{ font-size:12px; color: var(--muted); margin-top:6px; }
+
+    .stack{ display:flex; flex-direction:column; gap:6px; margin-bottom: 14px; }
+
+    .actions{ display:flex; align-items:center; gap:12px; margin-top:8px; flex-wrap:wrap; }
+    button{
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color:#24310b; border:0; border-radius:999px;
+      padding:12px 18px; font-weight:700; font-size:15px; cursor:pointer;
+      transition: filter .2s ease, transform .1s ease;
+      box-shadow: 0 8px 20px rgba(110,130,20,.20);
     }
-    button {
-      background: black;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-size: 15px;
-      cursor: pointer;
-      transition: background 0.3s ease;
+    button:hover{ filter:brightness(1.05); }
+    button:active{ transform: translateY(1px); }
+    button[disabled]{ opacity:.6; cursor:not-allowed; }
+
+    .status{ font-size:14px; color: var(--muted); }
+
+    .banner{
+      display:none; margin-top:8px; padding:12px 14px; border-radius:12px; border:1px solid;
     }
-    button:hover {
-      background: #333;
-    }
+    .banner.show{ display:block; }
+    .banner.ok{ background:#f0f9eb; border-color:#cce3b0; color:#305419; }
+    .banner.err{ background:#fff3f3; border-color:#f3c2c2; color:#7a2c2c; }
+
+    /* reCAPTCHA spacing */
+    .captcha-wrap{ margin: 10px 0 6px; }
   </style>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-  <form id="contact-form">
-    <h2>Send Us a Message</h2>
-    <p>Please fill in the form below to get in touch with us.</p>
+  <form id="contact-form" novalidate>
+    <h2>Na shkruani</h2>
+    <p class="lead">Plotësoni formularin dhe do t’ju kontaktojmë sa më shpejt.</p>
 
     <div class="form-row">
-      <input type="text" name="firstName" placeholder="First name" required />
-      <input type="text" name="lastName" placeholder="Last name" required />
+      <div>
+        <label for="firstName">Emri</label>
+        <input type="text" id="firstName" name="firstName" placeholder="Shkruani emrin" required />
+      </div>
+      <div>
+        <label for="lastName">Mbiemri</label>
+        <input type="text" id="lastName" name="lastName" placeholder="Shkruani mbiemrin" required />
+      </div>
     </div>
 
     <div class="form-row">
-      <input type="email" name="email" placeholder="Email address" required />
-      <input type="tel" name="phone" placeholder="Phone Number" />
+      <div>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="emri@shembull.com" required />
+        <div class="help">Email-i përdoret vetëm për t’ju kthyer përgjigje.</div>
+      </div>
+      <div>
+        <label for="phone">Telefoni (opsional)</label>
+        <input type="tel" id="phone" name="phone" placeholder="+355 ..." />
+      </div>
     </div>
 
-    <div class="form-row">
-      <textarea name="message" placeholder="Message" required></textarea>
+    <div class="stack">
+      <label for="message">Mesazhi juaj</label>
+      <textarea id="message" name="message" placeholder="Shkruani mesazhin..." required></textarea>
     </div>
 
-    <label>Upload your CV (PDF):
-      <input type="file" id="cv" accept=".pdf" />
-    </label>
+    <div class="stack">
+      <label for="cv">Ngarko CV (PDF)</label>
+      <input type="file" id="cv" accept="application/pdf" />
+    </div>
 
-    <label>Upload Motivation Letter (PDF):
-      <input type="file" id="motivation" accept=".pdf" />
-    </label>
+    <div class="stack">
+      <label for="motivation">Ngarko Letër Motivimi (PDF)</label>
+      <input type="file" id="motivation" accept="application/pdf" />
+    </div>
 
-    <br><br>
-    <!-- reCAPTCHA checkbox -->
-    <div class="g-recaptcha" data-sitekey="6LfBBporAAAAAA1jbDpwNfQ_fd_6DGKukVmy5ise"></div>
-    <br>
-    <button type="submit">Submit</button>
+    <div class="captcha-wrap">
+      <div class="g-recaptcha" data-sitekey="6LfBBporAAAAAA1jbDpwNfQ_fd_6DGKukVmy5ise"></div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" id="submitBtn">Dërgo</button>
+      <span class="status" id="status" aria-live="polite"></span>
+    </div>
+
+    <div class="banner" id="banner" role="status" aria-live="polite"></div>
   </form>
 
   <script>
-    document.getElementById("contact-form").addEventListener("submit", async function(e) {
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbhyjfKNqA2jTUEWgB_JRbui2oz9DAMRDX2gcBOsu3GO-h7ybfHLITT6d7RzFV7Xny/exec";
+
+    const form = document.getElementById("contact-form");
+    const statusEl = document.getElementById("status");
+    const banner = document.getElementById("banner");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function setStatus(msg){ statusEl.textContent = msg; }
+    function showBanner(type, msg){
+      banner.className = "banner show " + (type === "ok" ? "ok" : "err");
+      banner.textContent = msg;
+    }
+    function disableForm(disabled){ submitBtn.disabled = disabled; }
+
+    // Helper: read file to base64 (PDF only)
+    function toBase64(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64 = String(reader.result).split(",")[1] || "";
+          resolve(base64);
+        };
+        reader.onerror = err => reject(err);
+      });
+    }
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      setStatus(""); banner.className = "banner"; banner.textContent = "";
 
-      const form = e.target;
-      const toBase64 = file =>
-        new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => resolve(reader.result.split(",")[1]);
-          reader.onerror = error => reject(error);
-        });
+      // Basic validation
+      if(!form.firstName.value.trim()) return showBanner("err", "Shkruani emrin.");
+      if(!form.lastName.value.trim())  return showBanner("err", "Shkruani mbiemrin.");
+      if(!form.email.value.trim())     return showBanner("err", "Shkruani email-in.");
+      if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(form.email.value.trim()))
+        return showBanner("err", "Email i pavlefshëm.");
+      if(!form.message.value.trim())   return showBanner("err", "Shkruani mesazhin.");
 
+      // reCAPTCHA
+      const token = grecaptcha.getResponse();
+      if(!token){ return showBanner("err", "Ju lutemi plotësoni reCAPTCHA-n."); }
+
+      // Files (optional)
       const cvFile = document.getElementById("cv").files[0];
       const motivationFile = document.getElementById("motivation").files[0];
 
-      const cvBase64 = cvFile ? await toBase64(cvFile) : "";
-      const motivationBase64 = motivationFile ? await toBase64(motivationFile) : "";
+      // (Optional) size guard: 5MB
+      const MAX = 5 * 1024 * 1024;
+      if (cvFile && cvFile.size > MAX) return showBanner("err", "CV është më e madhe se 5MB.");
+      if (motivationFile && motivationFile.size > MAX) return showBanner("err", "Letra e motivimit është më e madhe se 5MB.");
 
-      const token = grecaptcha.getResponse();
-      if (!token) {
-        alert("Please complete the reCAPTCHA.");
-        return;
+      let cvBase64 = "";
+      let motivationBase64 = "";
+      try{
+        if (cvFile) cvBase64 = await toBase64(cvFile);
+        if (motivationFile) motivationBase64 = await toBase64(motivationFile);
+      }catch(err){
+        return showBanner("err", "Nuk u lexuan skedarët PDF.");
       }
 
       const payload = new URLSearchParams({
-        firstName: form.firstName.value,
-        lastName: form.lastName.value,
-        email: form.email.value,
-        phone: form.phone.value,
-        message: form.message.value,
+        firstName: form.firstName.value.trim(),
+        lastName:  form.lastName.value.trim(),
+        email:     form.email.value.trim(),
+        phone:     form.phone.value.trim(),
+        message:   form.message.value.trim(),
         cvBase64,
         motivationBase64,
         token
       });
 
-      fetch("https://script.google.com/macros/s/AKfycbw-NDcRpqhh9v3TgRVRpnGUqLAvvTTc9SrPb62CmVCQUdtgLUIH1-W6IRdDBdybSZws/exec", {
-        method: "POST",
-        body: payload
-      })
-      .then(res => res.text())
-      .then(text => {
-        alert(text);
-        form.reset();
-        grecaptcha.reset();
-      })
-      .catch(err => alert("Error: " + err.message));
+      try{
+        disableForm(true);
+        setStatus("Duke u dërguar…");
+
+        const res = await fetch(SCRIPT_URL, { method: "POST", body: payload });
+        const text = await res.text();
+
+        if(res.ok){
+          form.reset();
+          grecaptcha.reset();
+          showBanner("ok", text || "Mesazhi u dërgua me sukses.");
+        } else {
+          showBanner("err", text || "Ndodhi një gabim gjatë dërgimit.");
+        }
+      }catch(err){
+        showBanner("err", "Gabim: " + err.message);
+      }finally{
+        setStatus("");
+        disableForm(false);
+      }
     });
   </script>
 </body>
