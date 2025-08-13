@@ -1,253 +1,183 @@
 <!DOCTYPE html>
-<html lang="sq">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Formular Kontakti</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Floating Social Share Buttons</title>
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
     :root{
-      --accent: #ced998;   /* jeshile e kërkuar */
-      --accent-2:#b8c480;
-      --ink: #1b1f22;
-      --muted:#5b6368;
-      --bg: #f7f9f3;
-      --card:#ffffff;
-      --stroke:#e3ebcc;
-      --radius:12px;
-      --shadow: 0 10px 24px rgba(0,0,0,.08);
-    }
-    *{ box-sizing: border-box; }
-
-    body{
-      margin:0; padding:40px;
-      background: radial-gradient(700px 500px at 10% 0%, rgba(206,217,152,.25), transparent 60%),
-                  radial-gradient(700px 500px at 100% 100%, rgba(184,196,128,.18), transparent 60%),
-                  var(--bg);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color: var(--ink);
-      display:flex; justify-content:center;
+      --btn-size: 44px;
+      --gap: 12px;
+      --shadow: 0 2px 10px rgba(0,0,0,.15);
+      --radius: 14px;
     }
 
-    form#contact-form{
-      width:min(640px,100%);
-      background: var(--card);
-      border:1px solid var(--stroke);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 28px;
-    }
-
-    h2{ margin: 0 0 6px 0; font-size: 26px; }
-    p.lead{ margin:0 0 20px 0; color: var(--muted); }
-
-    .form-row{
-      display:grid; grid-template-columns: 1fr 1fr; gap:14px;
-      margin-bottom: 16px;
-    }
-    @media (max-width:640px){ .form-row{ grid-template-columns: 1fr; } }
-
-    label{
-      display:block; font-size:14px; margin-bottom:8px; color:#3b3f36; font-weight:600;
-    }
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    textarea,
-    input[type="file"]{
-      width:100%;
-      padding:12px 12px;
-      border:1.5px solid var(--stroke);
+    .floating-share {
+      position: fixed;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      z-index: 9999;
+      background: #fff;
+      padding: 8px;
       border-radius: var(--radius);
-      background:#fff;
-      font-size:14px;
-      transition: border .2s ease, box-shadow .2s ease;
-    }
-    textarea{ min-height:120px; resize: vertical; }
-
-    input:focus, textarea:focus{
-      outline: none;
-      border-color: var(--accent-2);
-      box-shadow: 0 0 0 4px rgba(206,217,152,.28);
+      box-shadow: var(--shadow);
     }
 
-    .help{ font-size:12px; color: var(--muted); margin-top:6px; }
-
-    .stack{ display:flex; flex-direction:column; gap:6px; margin-bottom: 14px; }
-
-    .actions{ display:flex; align-items:center; gap:12px; margin-top:8px; flex-wrap:wrap; }
-    button{
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color:#24310b; border:0; border-radius:999px;
-      padding:12px 18px; font-weight:700; font-size:15px; cursor:pointer;
-      transition: filter .2s ease, transform .1s ease;
-      box-shadow: 0 8px 20px rgba(110,130,20,.20);
+    .floating-share a,
+    .floating-share button {
+      width: var(--btn-size);
+      height: var(--btn-size);
+      border: none;
+      border-radius: 50%;
+      font-size: 18px;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      overflow: hidden;
+      transition: transform .1s ease, opacity .2s ease;
     }
-    button:hover{ filter:brightness(1.05); }
-    button:active{ transform: translateY(1px); }
-    button[disabled]{ opacity:.6; cursor:not-allowed; }
 
-    .status{ font-size:14px; color: var(--muted); }
+    .floating-share a:hover,
+    .floating-share button:hover { opacity: .85; transform: translateY(-1px); }
 
-    .banner{
-      display:none; margin-top:8px; padding:12px 14px; border-radius:12px; border:1px solid;
+    .whatsapp  { background-color: #25D366; }
+    .x-twitter { background-color: #000; }
+    .facebook  { background-color: #3b5998; }
+    .linkedin  { background-color: #0077b5; }
+    .instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+    .email     { background-color: #666; }
+    .copylink  { background-color: #4a4a4a; }
+    .native    { background-color: #6c63ff; }
+
+    .x-logo { width: 20px; height: 20px; fill: currentColor; }
+
+    /* Small screens: tuck to bottom-left */
+    @media (max-width: 640px){
+      .floating-share{ top: unset; bottom: 10px; transform: none; flex-direction: row; left: 10px; right: 10px; }
     }
-    .banner.show{ display:block; }
-    .banner.ok{ background:#f0f9eb; border-color:#cce3b0; color:#305419; }
-    .banner.err{ background:#fff3f3; border-color:#f3c2c2; color:#7a2c2c; }
-
-    /* reCAPTCHA spacing */
-    .captcha-wrap{ margin: 10px 0 6px; }
   </style>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-  <form id="contact-form" novalidate>
-    <h2>Na shkruani</h2>
-    <p class="lead">Plotësoni formularin dhe do t’ju kontaktojmë sa më shpejt.</p>
 
-    <div class="form-row">
-      <div>
-        <label for="firstName">Emri</label>
-        <input type="text" id="firstName" name="firstName" placeholder="Shkruani emrin" required />
-      </div>
-      <div>
-        <label for="lastName">Mbiemri</label>
-        <input type="text" id="lastName" name="lastName" placeholder="Shkruani mbiemrin" required />
-      </div>
-    </div>
+  <!-- Floating Social Share Buttons -->
+  <div class="floating-share" role="region" aria-label="Share this page">
+    <a href="#" target="_blank" rel="noopener" class="whatsapp" title="Share on WhatsApp" aria-label="Share on WhatsApp">
+      <i class="fab fa-whatsapp" aria-hidden="true"></i>
+    </a>
 
-    <div class="form-row">
-      <div>
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="emri@shembull.com" required />
-        <div class="help">Email-i përdoret vetëm për t’ju kthyer përgjigje.</div>
-      </div>
-      <div>
-        <label for="phone">Telefoni (opsional)</label>
-        <input type="tel" id="phone" name="phone" placeholder="+355 ..." />
-      </div>
-    </div>
+    <a href="#" target="_blank" rel="noopener" class="x-twitter" title="Share on X" aria-label="Share on X">
+      <!-- X SVG Logo -->
+      <svg class="x-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20.66 3H17.34L12 9.36 6.66 3H3L10.8 12.29 3 21h3.34L12 14.63 17.34 21H21L13.2 11.71 20.66 3Z"/>
+      </svg>
+    </a>
 
-    <div class="stack">
-      <label for="message">Mesazhi juaj</label>
-      <textarea id="message" name="message" placeholder="Shkruani mesazhin..." required></textarea>
-    </div>
+    <a href="#" target="_blank" rel="noopener" class="facebook" title="Share on Facebook" aria-label="Share on Facebook">
+      <i class="fab fa-facebook-f" aria-hidden="true"></i>
+    </a>
 
-    <div class="stack">
-      <label for="cv">Ngarko CV (PDF)</label>
-      <input type="file" id="cv" accept="application/pdf" />
-    </div>
+    <a href="#" target="_blank" rel="noopener" class="linkedin" title="Share on LinkedIn" aria-label="Share on LinkedIn">
+      <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+    </a>
 
-    <div class="stack">
-      <label for="motivation">Ngarko Letër Motivimi (PDF)</label>
-      <input type="file" id="motivation" accept="application/pdf" />
-    </div>
+    <!-- Instagram has no web share endpoint; this just opens Instagram -->
+    <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="instagram" title="Open Instagram" aria-label="Open Instagram">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+    </a>
 
-    <div class="captcha-wrap">
-      <div class="g-recaptcha" data-sitekey="6LfBBporAAAAAA1jbDpwNfQ_fd_6DGKukVmy5ise"></div>
-    </div>
+    <a href="#" class="email" title="Share via Email" aria-label="Share via Email">
+      <i class="fas fa-envelope" aria-hidden="true"></i>
+    </a>
 
-    <div class="actions">
-      <button type="submit" id="submitBtn">Dërgo</button>
-      <span class="status" id="status" aria-live="polite"></span>
-    </div>
+    <button type="button" class="copylink" title="Copy Link" aria-label="Copy Link" id="copyBtn">
+      <i class="fas fa-link" aria-hidden="true"></i>
+    </button>
 
-    <div class="banner" id="banner" role="status" aria-live="polite"></div>
-  </form>
+    <button type="button" class="native" title="Share" aria-label="Share" id="nativeShare" style="display:none">
+      <i class="fas fa-share-alt" aria-hidden="true"></i>
+    </button>
+  </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbhyjfKNqA2jTUEWgB_JRbui2oz9DAMRDX2gcBOsu3GO-h7ybfHLITT6d7RzFV7Xny/exec";
-
-    const form = document.getElementById("contact-form");
-    const statusEl = document.getElementById("status");
-    const banner = document.getElementById("banner");
-    const submitBtn = document.getElementById("submitBtn");
-
-    function setStatus(msg){ statusEl.textContent = msg; }
-    function showBanner(type, msg){
-      banner.className = "banner show " + (type === "ok" ? "ok" : "err");
-      banner.textContent = msg;
-    }
-    function disableForm(disabled){ submitBtn.disabled = disabled; }
-
-    // Helper: read file to base64 (PDF only)
-    function toBase64(file){
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          const base64 = String(reader.result).split(",")[1] || "";
-          resolve(base64);
-        };
-        reader.onerror = err => reject(err);
-      });
+    // --- Google Sites friendly share target ---
+    // If this snippet is embedded in an <iframe> (as in Google Sites),
+    // location.href points to the iframe URL. document.referrer usually contains
+    // the parent Sites page URL. Prefer referrer when present.
+    function getShareTarget(){
+      try{
+        const ref = document.referrer;
+        if (ref && /^https?:\/\//i.test(ref)) return new URL(ref).href;
+      }catch(e){ /* ignore */ }
+      return location.href;
     }
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      setStatus(""); banner.className = "banner"; banner.textContent = "";
+    function buildShareLinks(){
+      const shareUrl   = getShareTarget();
+      const pageUrl    = encodeURIComponent(shareUrl);
+      const pageTitle  = encodeURIComponent(document.title || 'Check this out');
 
-      // Basic validation
-      if(!form.firstName.value.trim()) return showBanner("err", "Shkruani emrin.");
-      if(!form.lastName.value.trim())  return showBanner("err", "Shkruani mbiemrin.");
-      if(!form.email.value.trim())     return showBanner("err", "Shkruani email-in.");
-      if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(form.email.value.trim()))
-        return showBanner("err", "Email i pavlefshëm.");
-      if(!form.message.value.trim())   return showBanner("err", "Shkruani mesazhin.");
+      setHref('.whatsapp',  `https://api.whatsapp.com/send?text=${pageTitle}%20${pageUrl}`);
+      setHref('.x-twitter', `https://twitter.com/intent/tweet?url=${pageUrl}&text=${pageTitle}`);
+      setHref('.facebook',  `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`);
+      setHref('.linkedin',  `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`);
+      setHref('.email',     `mailto:?subject=${pageTitle}&body=${pageUrl}`);
+    }
 
-      // reCAPTCHA
-      const token = grecaptcha.getResponse();
-      if(!token){ return showBanner("err", "Ju lutemi plotësoni reCAPTCHA-n."); }
+    function setHref(selector, url){
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute('href', url);
+    }
 
-      // Files (optional)
-      const cvFile = document.getElementById("cv").files[0];
-      const motivationFile = document.getElementById("motivation").files[0];
-
-      // (Optional) size guard: 5MB
-      const MAX = 5 * 1024 * 1024;
-      if (cvFile && cvFile.size > MAX) return showBanner("err", "CV është më e madhe se 5MB.");
-      if (motivationFile && motivationFile.size > MAX) return showBanner("err", "Letra e motivimit është më e madhe se 5MB.");
-
-      let cvBase64 = "";
-      let motivationBase64 = "";
+    async function copyLink(){
+      const link = getShareTarget();
       try{
-        if (cvFile) cvBase64 = await toBase64(cvFile);
-        if (motivationFile) motivationBase64 = await toBase64(motivationFile);
-      }catch(err){
-        return showBanner("err", "Nuk u lexuan skedarët PDF.");
-      }
-
-      const payload = new URLSearchParams({
-        firstName: form.firstName.value.trim(),
-        lastName:  form.lastName.value.trim(),
-        email:     form.email.value.trim(),
-        phone:     form.phone.value.trim(),
-        message:   form.message.value.trim(),
-        cvBase64,
-        motivationBase64,
-        token
-      });
-
-      try{
-        disableForm(true);
-        setStatus("Duke u dërguar…");
-
-        const res = await fetch(SCRIPT_URL, { method: "POST", body: payload });
-        const text = await res.text();
-
-        if(res.ok){
-          form.reset();
-          grecaptcha.reset();
-          showBanner("ok", text || "Mesazhi u dërgua me sukses.");
+        if (navigator.clipboard && window.isSecureContext){
+          await navigator.clipboard.writeText(link);
         } else {
-          showBanner("err", text || "Ndodhi një gabim gjatë dërgimit.");
+          const ta = document.createElement('textarea');
+          ta.value = link;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
         }
-      }catch(err){
-        showBanner("err", "Gabim: " + err.message);
-      }finally{
-        setStatus("");
-        disableForm(false);
+        alert('Link copied to clipboard!');
+      } catch {
+        alert('Failed to copy link.');
       }
+    }
+
+    function setupNativeShare(){
+      const btn = document.getElementById('nativeShare');
+      if (!btn) return;
+      if (navigator.share){
+        btn.style.display = '';
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.share({ title: document.title || 'Share', url: getShareTarget() });
+          } catch (_) { /* user cancelled or not available */ }
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      buildShareLinks();
+      setupNativeShare();
+      document.getElementById('copyBtn')?.addEventListener('click', copyLink);
     });
   </script>
 </body>
