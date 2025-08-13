@@ -60,15 +60,15 @@
       border-radius: var(--radius);
       background:#fff;
       font-size:14px;
-      transition: border .2s ease, box-shadow .2s ease, background .2s ease;
+      transition: border .2s ease, box-shadow .2s ease;
     }
+    textarea{ min-height:120px; resize: vertical; }
+
     input:focus, textarea:focus{
       outline: none;
       border-color: var(--accent-2);
       box-shadow: 0 0 0 4px rgba(206,217,152,.28);
-      background: #fcfff6;
     }
-    textarea{ min-height:120px; resize: vertical; }
 
     .help{ font-size:12px; color: var(--muted); margin-top:6px; }
 
@@ -89,12 +89,13 @@
     .status{ font-size:14px; color: var(--muted); }
 
     .banner{
-      display:none; margin-top:12px; padding:12px 14px; border-radius:12px; border:1px solid;
+      display:none; margin-top:8px; padding:12px 14px; border-radius:12px; border:1px solid;
     }
     .banner.show{ display:block; }
     .banner.ok{ background:#f0f9eb; border-color:#cce3b0; color:#305419; }
     .banner.err{ background:#fff3f3; border-color:#f3c2c2; color:#7a2c2c; }
 
+    /* reCAPTCHA spacing */
     .captcha-wrap{ margin: 10px 0 6px; }
   </style>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -155,7 +156,6 @@
   </form>
 
   <script>
-    // URL e Web App nga Google Apps Script (ruan reCAPTCHA + file base64)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-NDcRpqhh9v3TgRVRpnGUqLAvvTTc9SrPb62CmVCQUdtgLUIH1-W6IRdDBdybSZws/exec";
 
     const form = document.getElementById("contact-form");
@@ -170,7 +170,7 @@
     }
     function disableForm(disabled){ submitBtn.disabled = disabled; }
 
-    // Lexim i një skedari PDF në base64
+    // Helper: read file to base64 (PDF only)
     function toBase64(file){
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -187,26 +187,24 @@
       e.preventDefault();
       setStatus(""); banner.className = "banner"; banner.textContent = "";
 
-      // Validim bazik
+      // Basic validation
       if(!form.firstName.value.trim()) return showBanner("err", "Shkruani emrin.");
       if(!form.lastName.value.trim())  return showBanner("err", "Shkruani mbiemrin.");
       if(!form.email.value.trim())     return showBanner("err", "Shkruani email-in.");
-
-      // ✅ RREGULLIMI I REGEX-it (përdor \S, jo \\s)
-      if(!/^\S+@\S+\.\S{2,}$/.test(form.email.value.trim()))
+      if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(form.email.value.trim()))
         return showBanner("err", "Email i pavlefshëm.");
-
       if(!form.message.value.trim())   return showBanner("err", "Shkruani mesazhin.");
 
       // reCAPTCHA
       const token = grecaptcha.getResponse();
       if(!token){ return showBanner("err", "Ju lutemi plotësoni reCAPTCHA-n."); }
 
-      // Skedarët (opsionalë) + kufiri i madhësisë
+      // Files (optional)
       const cvFile = document.getElementById("cv").files[0];
       const motivationFile = document.getElementById("motivation").files[0];
-      const MAX = 5 * 1024 * 1024; // 5MB
 
+      // (Optional) size guard: 5MB
+      const MAX = 5 * 1024 * 1024;
       if (cvFile && cvFile.size > MAX) return showBanner("err", "CV është më e madhe se 5MB.");
       if (motivationFile && motivationFile.size > MAX) return showBanner("err", "Letra e motivimit është më e madhe se 5MB.");
 
